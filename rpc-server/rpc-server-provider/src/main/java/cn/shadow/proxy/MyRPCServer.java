@@ -1,8 +1,10 @@
 package cn.shadow.proxy;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -19,6 +21,8 @@ import org.springframework.util.StringUtils;
 import cn.shadow.annotation.RPCService;
 import cn.shadow.handler.ProcessorHandler;
 import cn.shadow.handler.ProcessorHandler2;
+import cn.shadow.registry.IRegisterCenter;
+import cn.shadow.registry.RegistryCenterWithZK;
 
 @Component
 @ComponentScan(basePackages = "cn.shadow")
@@ -27,6 +31,7 @@ public class MyRPCServer implements ApplicationContextAware,InitializingBean{
 	ExecutorService executorService=Executors.newCachedThreadPool();
 	private int port;
 	private Map<String, Object>handlerMap=new HashMap<String, Object>();
+	private IRegisterCenter registryCenter=new RegistryCenterWithZK();
 	public MyRPCServer(int port) {
 		this.port = port;
 	}
@@ -38,7 +43,7 @@ public class MyRPCServer implements ApplicationContextAware,InitializingBean{
 		try {
 			serverSocket=new ServerSocket(port);
 			while(true) {
-				Socket socket=serverSocket.accept();//Á´½Ó×èÈûBIOÄ£Ê½
+				Socket socket=serverSocket.accept();//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½BIOÄ£Ê½
 				executorService.execute(new ProcessorHandler2(handlerMap,socket));
 			}
 		} catch (IOException e) {
@@ -70,8 +75,18 @@ public class MyRPCServer implements ApplicationContextAware,InitializingBean{
 					serviceName+="-"+version;
 				}
 				handlerMap.put(serviceName, serverBean);
+				registryCenter.registry(serviceName,getAddress()+":"+port); 
 			}
 		}
 	}
-
+	private String getAddress() {
+		InetAddress address=null;
+		try {
+			address=InetAddress.getLocalHost();
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return address.getHostAddress();/* è·å¾—æœ¬æœºçš„åœ°å€ */
+	}
 }

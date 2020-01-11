@@ -3,30 +3,39 @@ package cn.shadow.proxy;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
+import org.springframework.util.StringUtils;
+
+import cn.shadow.discovery.IServiceDiscovery;
 import cn.shadow.request.RpcRequest;
 
 public class RemoteInvocationHandler implements InvocationHandler{
 	
-	private String host;
-	private int port;
+	private IServiceDiscovery serviceDiscovery;
+	private String version;
 	
-	public RemoteInvocationHandler(String host, int port) {
-		this.host = host;
-		this.port = port;
+	
+	public RemoteInvocationHandler(IServiceDiscovery serviceDiscovery,String version) {
+		this.serviceDiscovery=serviceDiscovery;
+		this.version=version;
 	}
 
 	@Override
 	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 		// TODO Auto-generated method stub
-		System.out.println("½øÈë");
-		//ÇëÇóÊý¾Ý¶î°ü×°
+		System.out.println("ï¿½ï¿½ï¿½ï¿½");
+		//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý¶ï¿½ï¿½×°
 		RpcRequest request=new RpcRequest();
 		request.setClassName("cn.shadow.service.IHellos");
 		request.setMethodName("sayHello");
 		request.setParamters(args);
-		request.setVersion("v1.0");
-		//´Ë´¦Í¨¹ýÔ¶³ÌÍ¨ÐÅ
-		RPCNetTransport netTransport=new RPCNetTransport(host, port);
+		request.setVersion(version);
+		//ï¿½Ë´ï¿½Í¨ï¿½ï¿½Ô¶ï¿½ï¿½Í¨ï¿½ï¿½
+		String serviceName=request.getClassName();
+		if(!StringUtils.isEmpty(version)) {
+			serviceName=serviceName+"-"+version;
+		}
+		String serviceAddress=serviceDiscovery.discovery(serviceName);
+		RPCNetTransport netTransport=new RPCNetTransport(serviceAddress);
 		Object result=netTransport.send(request);
 		return result;
 	}

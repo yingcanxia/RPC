@@ -16,7 +16,7 @@ public class App {
 		 */
 		ApplicationContext context=new AnnotationConfigApplicationContext(SpringConfig.class);
 		RPCProxyClient proxyClient=context.getBean(RPCProxyClient.class);
-		IHellos hellos=proxyClient.clientProxy(IHellos.class, "localhost", 8088);
+		IHellos hellos=proxyClient.clientProxy(IHellos.class,"v1.0");
 		String result=hellos.sayHello("666");
 		System.out.println(result);
 	}

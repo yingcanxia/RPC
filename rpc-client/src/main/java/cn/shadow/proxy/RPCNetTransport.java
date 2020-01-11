@@ -9,11 +9,10 @@ import java.net.UnknownHostException;
 import cn.shadow.request.RpcRequest;
 
 public class RPCNetTransport {
-	private String host;
-	private int port;
-	public RPCNetTransport(String host, int port) {
-		this.host = host;
-		this.port = port;
+	private String serviceAddress;
+	
+	public RPCNetTransport(String serviceAddress) {
+		this.serviceAddress=serviceAddress;
 	}
 	public Object send(RpcRequest request) {
 		Socket socket=null;
@@ -21,7 +20,8 @@ public class RPCNetTransport {
 		ObjectInputStream inputStream=null;
 		ObjectOutputStream outputStream=null;
 		try {
-			socket=new Socket(host, port);
+			String urls[]=serviceAddress.split(":");
+			socket=new Socket(urls[0], Integer.parseInt(urls[1]));
 			outputStream=new ObjectOutputStream(socket.getOutputStream());
 			outputStream.writeObject(request);
 			outputStream.flush();
